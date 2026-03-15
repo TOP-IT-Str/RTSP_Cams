@@ -1,13 +1,11 @@
 ﻿using LibVLCSharp.Shared;
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -55,6 +53,7 @@ namespace RTSP_Cams2
 
             Loaded += MainWindow_Loaded;
             Closing += MainWindow_Closing;
+            KeyDown += MainWindow_KeyDown;
         }
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
@@ -65,6 +64,18 @@ namespace RTSP_Cams2
             {
                 StartStreams();
             }
+            if (Settings.IsFullScreen)
+            {
+                EnableFullscreen();
+            }
+            var version = Assembly.GetExecutingAssembly().GetName().Version?.ToString();
+            Title = $"{Title} v{version}";
+        }
+
+        private void MainWindow_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.F11)
+                ToggleFullscreen();
         }
 
         private void PasswordInput_OnPasswordChanged(object sender, RoutedEventArgs e)
@@ -186,7 +197,8 @@ namespace RTSP_Cams2
                         Username = "admin",
                         Password = "",
                         CameraCount = 4,
-                        RtspPort = 554
+                        RtspPort = 554,
+                        IsFullScreen = false,
                     };
                     return;
                 }
@@ -206,7 +218,8 @@ namespace RTSP_Cams2
                     Username = "admin",
                     Password = "",
                     CameraCount = 4,
-                    RtspPort = 554
+                    RtspPort = 554,
+                    IsFullScreen = false,
                 };
             }
         }
@@ -335,6 +348,43 @@ namespace RTSP_Cams2
                 SettingsBorder.Visibility = Visibility.Visible;
                 (ShowSettingsBorder.Child as TextBlock)?.Text = "▼";
             }
+        }
+
+        private void ToggleFullscreen()
+        {
+            if (!Settings.IsFullScreen)
+            {
+                EnableFullscreen();
+            }
+            else
+            {
+                DisableFullscreen();
+            }
+        }
+
+        private void EnableFullscreen()
+        {
+            WindowStyle = WindowStyle.None;
+            WindowState = WindowState.Maximized;
+            ResizeMode = ResizeMode.NoResize;
+            Topmost = true;
+
+            Settings.IsFullScreen = true;
+        }
+
+        private void DisableFullscreen()
+        {
+            WindowStyle = WindowStyle.SingleBorderWindow;
+            WindowState = WindowState.Normal;
+            ResizeMode = ResizeMode.CanResize;
+            Topmost = false;
+
+            Settings.IsFullScreen = false;
+        }
+
+        private void FullScreenWindow_OnClick(object sender, RoutedEventArgs e)
+        {
+            ToggleFullscreen();
         }
     }
 }

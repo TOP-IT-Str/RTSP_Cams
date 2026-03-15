@@ -106,7 +106,7 @@
                 <TextBlock Grid.Row="0" Grid.Column="0" Text="IP-адрес" Foreground="White" Margin="0,0,8,4" />
                 <TextBlock Grid.Row="0" Grid.Column="1" Text="Имя пользователя" Foreground="White" Margin="0,0,8,4" />
                 <TextBlock Grid.Row="0" Grid.Column="2" Text="Пароль" Foreground="White" Margin="0,0,8,4" />
-                <TextBlock Grid.Row="0" Grid.Column="3" Text="Количество камер" Foreground="White" Margin="0,0,8,4" />
+                <TextBlock Grid.Row="0" Grid.Column="3" Text="Кол-во камер" Foreground="White" Margin="0,0,8,4" />
 
                 <TextBox Grid.Row="1"
                          Grid.Column="0"
@@ -143,6 +143,15 @@
                             Width="100"
                             Height="30"
                             Click="StartButton_Click" />
+                    <Button Content="⛶"
+                            Width="30"
+                            Height="30"
+                            Margin="8,0,0,0"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            DockPanel.Dock="Right"
+                            FontSize="20"
+                            Click="FullScreenWindow_OnClick"/>
                 </StackPanel>
             </Grid>
         </Border>
