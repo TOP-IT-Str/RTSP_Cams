@@ -88,8 +88,8 @@ jobs:
 
     - name: Zip builds
       run: |
-        powershell Compress-Archive artifacts/RTSP_Cams_win-x64_framework/* IT TOP GLAZ-x64.zip
-        powershell Compress-Archive artifacts/RTSP_Cams_win-x86_framework/* IT TOP GLAZ-x86.zip
+        powershell Compress-Archive artifacts/RTSP_Cams_win-x64_framework/* IT_TOP_GLAZ-x64.zip
+        powershell Compress-Archive artifacts/RTSP_Cams_win-x86_framework/* IT_TOP_GLAZ-x86.zip
 
     - name: Create Release
       uses: softprops/action-gh-release@v2
@@ -100,6 +100,6 @@ jobs:
         name: Build ${{ github.run_number }}
         body_path: CHANGELOG.txt
         files: |
-          IT TOP GLAZ-x64.zip
-          IT TOP GLAZ-x86.zip
+          IT_TOP_GLAZ-x64.zip
+          IT_TOP_GLAZ-x86.zip
           
