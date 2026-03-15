@@ -1,0 +1,7 @@
+{
+  "IpAddress": "192.168.20.10",
+  "Username": "user1",
+  "Password": "userTop02!",
+  "CameraCount": 8,
+  "RtspPort": 554
+}
