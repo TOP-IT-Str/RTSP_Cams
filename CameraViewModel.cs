@@ -2,11 +2,8 @@
 using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using System.Security.Cryptography;
-using System.Windows.Media;
-using MediaPlayer = LibVLCSharp.Shared.MediaPlayer;
 
-namespace RtspGridDemo
+namespace RTSP_Cams2
 {
     public sealed class CameraViewModel : INotifyPropertyChanged, IDisposable
     {
@@ -15,7 +12,8 @@ namespace RtspGridDemo
         private string _status = "Ожидание";
 
         public string Title { get; }
-        public string Url { get; }
+        public string Url { get; private set; }
+        public int Channel { get; }
         public MediaPlayer MediaPlayer { get; }
 
         public string Status
@@ -28,15 +26,17 @@ namespace RtspGridDemo
             }
         }
 
-        public CameraViewModel(LibVLC libVLC, string title, string url)
+        public CameraViewModel(LibVLC libVLC, string title, string url, int channel)
         {
             _libVLC = libVLC;
             Title = title;
             Url = url;
+            Channel = channel;
 
             MediaPlayer = new MediaPlayer(_libVLC)
             {
-                EnableHardwareDecoding = true
+                EnableHardwareDecoding = true,
+                Mute = true
             };
 
             MediaPlayer.Opening += (_, _) => Status = "Подключение";
@@ -49,13 +49,23 @@ namespace RtspGridDemo
 
         public void Start()
         {
+            StartWithUrl(Url, muted: true);
+        }
+
+        public void StartWithUrl(string url, bool muted)
+        {
+            Url = url;
+
             _media?.Dispose();
-            _media = new Media(_libVLC, new Uri(Url));
+            _media = new Media(_libVLC, url, FromType.FromLocation);
             _media.AddOption(":rtsp-tcp");
             _media.AddOption(":network-caching=300");
             _media.AddOption(":live-caching=300");
-            _media.AddOption(":no-audio");
 
+            if (muted)
+                _media.AddOption(":no-audio");
+
+            MediaPlayer.Mute = muted;
             MediaPlayer.Play(_media);
         }
 

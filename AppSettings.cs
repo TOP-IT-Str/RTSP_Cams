@@ -1,4 +1,4 @@
-﻿namespace RtspGridDemo
+﻿namespace RTSP_Cams2
 {
     public sealed class AppSettings
     {
@@ -6,5 +6,6 @@
         public string Username { get; set; } = "";
         public string Password { get; set; } = "";
         public int CameraCount { get; set; } = 4;
+        public int RtspPort { get; set; } = 554;
     }
 }

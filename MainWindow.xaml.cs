@@ -1,4 +1,5 @@
 ﻿using LibVLCSharp.Shared;
+using RTSP_Cams2;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -6,8 +7,10 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
 
-namespace RtspGridDemo
+namespace RTSP_Cams2
 {
     public partial class MainWindow : Window, INotifyPropertyChanged
     {
@@ -37,20 +40,18 @@ namespace RtspGridDemo
 
             LoadSettings();
             DataContext = this;
-
             PasswordInput.Password = Settings.Password ?? string.Empty;
 
             _libVLC = new LibVLC(
                 "--rtsp-tcp",
                 "--network-caching=300",
                 "--live-caching=300",
-                "--no-audio",
                 "--drop-late-frames",
                 "--skip-frames"
             );
 
-            Closing += MainWindow_Closing;
             Loaded += MainWindow_Loaded;
+            Closing += MainWindow_Closing;
         }
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
@@ -91,9 +92,9 @@ namespace RtspGridDemo
             for (int i = 1; i <= count; i++)
             {
                 string title = $"Камера {i}";
-                string url = BuildDahuaRtspUrl(Settings, i);
+                string url = BuildDahuaRtspUrl(Settings, i, mainStream: false);
 
-                var vm = new CameraViewModel(_libVLC, title, url);
+                var vm = new CameraViewModel(_libVLC, title, url, i);
                 Cameras.Add(vm);
             }
 
@@ -103,13 +104,33 @@ namespace RtspGridDemo
                 camera.Start();
         }
 
-        private static string BuildDahuaRtspUrl(AppSettings settings, int channel)
+        private static string BuildDahuaRtspUrl(AppSettings settings, int channel, bool mainStream)
         {
             string login = Uri.EscapeDataString(settings.Username ?? string.Empty);
             string password = Uri.EscapeDataString(settings.Password ?? string.Empty);
             string ip = settings.IpAddress ?? string.Empty;
+            int port = settings.RtspPort <= 0 ? 554 : settings.RtspPort;
+            int subtype = mainStream ? 0 : 1;
 
-            return $"rtsp://{login}:{password}@{ip}:554/cam/realmonitor?channel={channel}&subtype=1";
+            return $"rtsp://{login}:{password}@{ip}:{port}/cam/realmonitor?channel={channel}&subtype={subtype}";
+        }
+
+        private void FullscreenButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not FrameworkElement element)
+                return;
+
+            if (element.Tag is not CameraViewModel camera)
+                return;
+
+            string mainUrl = BuildDahuaRtspUrl(Settings, camera.Channel, mainStream: true);
+
+            var fullscreenWindow = new FullscreenWindow(_libVLC, camera.Title, mainUrl)
+            {
+                Owner = this
+            };
+
+            fullscreenWindow.ShowDialog();
         }
 
         private void StopAndClearStreams()
@@ -142,7 +163,8 @@ namespace RtspGridDemo
                         IpAddress = "192.168.1.108",
                         Username = "admin",
                         Password = "",
-                        CameraCount = 4
+                        CameraCount = 4,
+                        RtspPort = 554
                     };
                     return;
                 }
@@ -151,6 +173,8 @@ namespace RtspGridDemo
                 var loaded = JsonSerializer.Deserialize<AppSettings>(json);
 
                 Settings = loaded ?? new AppSettings();
+                if (Settings.RtspPort <= 0)
+                    Settings.RtspPort = 554;
             }
             catch
             {
@@ -159,7 +183,8 @@ namespace RtspGridDemo
                     IpAddress = "192.168.1.108",
                     Username = "admin",
                     Password = "",
-                    CameraCount = 4
+                    CameraCount = 4,
+                    RtspPort = 554
                 };
             }
         }

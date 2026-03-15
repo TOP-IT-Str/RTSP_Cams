@@ -1,11 +1,11 @@
-﻿<Window x:Class="RtspGridDemo.MainWindow"
+﻿<Window x:Class="RTSP_Cams2.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vlc="clr-namespace:LibVLCSharp.WPF;assembly=LibVLCSharp.WPF"
         mc:Ignorable="d"
-        Title="RTSP Grid Demo"
+        Title="IT TOP GLAZ"
         Width="900"
         Height="600"
         WindowStartupLocation="CenterScreen"
@@ -45,11 +45,23 @@
                                 <DockPanel Grid.Row="1" Margin="1">
                                     <TextBlock Text="{Binding Title}"
                                                Foreground="White"
-                                               FontSize="14"
-                                               FontWeight="SemiBold" />
+                                               FontSize="12"
+                                               FontWeight="SemiBold"
+                                               VerticalAlignment="Center" />
+
                                     <TextBlock Text="{Binding Status}"
                                                Foreground="#BBBBBB"
-                                               Margin="12,0,0,0" />
+                                               Margin="12,0,0,0"
+                                               VerticalAlignment="Center" />
+
+                                    <Button Content="⛶"
+                                            Width="28"
+                                            Height="22"
+                                            Margin="8,0,0,0"
+                                            HorizontalAlignment="Right"
+                                            DockPanel.Dock="Right"
+                                            Click="FullscreenButton_Click"
+                                            Tag="{Binding}" />
                                 </DockPanel>
                             </Grid>
                         </Border>
