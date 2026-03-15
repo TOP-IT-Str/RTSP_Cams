@@ -5,7 +5,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Text.Encodings.Web;
 using System.Text.Json;
+using System.Text.Unicode;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -111,7 +113,7 @@ namespace RTSP_Cams2
 
             for (int i = 1; i <= count; i++)
             {
-                string title = $"Камера {i}";
+                string title = Settings.GetCameraName(i);
                 string url = BuildDahuaRtspUrl(Settings, i, mainStream: false);
 
                 var vm = new CameraViewModel(_libVLC, title, url, i);
@@ -185,21 +187,27 @@ namespace RTSP_Cams2
             else GridColumns = 5;
         }
 
+        private void SetDefaulSettings()
+        {
+            Settings = new AppSettings
+            {
+                IpAddress = "192.168.1.108",
+                Username = "admin",
+                Password = "",
+                CameraCount = 4,
+                RtspPort = 554,
+                IsFullScreen = false,
+                CameraNames = new List<string>()
+            };
+        }
+
         private void LoadSettings()
         {
             try
             {
                 if (!File.Exists(SettingsFileName))
                 {
-                    Settings = new AppSettings
-                    {
-                        IpAddress = "192.168.1.108",
-                        Username = "admin",
-                        Password = "",
-                        CameraCount = 4,
-                        RtspPort = 554,
-                        IsFullScreen = false,
-                    };
+                    SetDefaulSettings();
                     return;
                 }
 
@@ -212,23 +220,18 @@ namespace RTSP_Cams2
             }
             catch
             {
-                Settings = new AppSettings
-                {
-                    IpAddress = "192.168.1.108",
-                    Username = "admin",
-                    Password = "",
-                    CameraCount = 4,
-                    RtspPort = 554,
-                    IsFullScreen = false,
-                };
+                SetDefaulSettings();
             }
+            NormalizeCameraNames();
         }
 
         private void SaveSettings()
         {
+            NormalizeCameraNames();
             var options = new JsonSerializerOptions
             {
-                WriteIndented = true
+                WriteIndented = true,
+                Encoder = JavaScriptEncoder.Create(UnicodeRanges.All),
             };
 
             string json = JsonSerializer.Serialize(Settings, options);
@@ -385,6 +388,17 @@ namespace RTSP_Cams2
         private void FullScreenWindow_OnClick(object sender, RoutedEventArgs e)
         {
             ToggleFullscreen();
+        }
+
+        private void NormalizeCameraNames()
+        {
+            Settings.CameraNames ??= new List<string>();
+
+            while (Settings.CameraNames.Count < Settings.CameraCount)
+                Settings.CameraNames.Add("");
+
+            while (Settings.CameraNames.Count > Settings.CameraCount)
+                Settings.CameraNames.RemoveAt(Settings.CameraNames.Count - 1);
         }
     }
 }

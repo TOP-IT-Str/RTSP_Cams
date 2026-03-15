@@ -9,5 +9,22 @@
         public int RtspPort { get; set; } = 554;
 
         public bool IsFullScreen { get; set; } = false;
+
+        public List<string> CameraNames { get; set; } = new();
+
+        public string GetCameraName(int channel)
+        {
+            if (
+                channel - 1 >= 0 &&
+                channel - 1 < CameraNames.Count)
+            {
+                string customName = CameraNames[channel - 1];
+
+                if (!string.IsNullOrWhiteSpace(customName))
+                    return customName;
+            }
+
+            return $"Камера {channel}";
+        }
     }
 }
