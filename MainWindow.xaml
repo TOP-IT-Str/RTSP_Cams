@@ -80,8 +80,7 @@
                 Padding="0"
                 MouseDown="ShowSettings"
                 >
-            <TextBlock HorizontalAlignment="Center" Text="▲" Foreground="White" Margin="0,0,8,0" 
-                       MouseDown="ShowSettings"/>
+            <TextBlock HorizontalAlignment="Center" Text="▲" Foreground="White" Margin="0,0,8,0" />
         </Border>
 
         <Border x:Name="SettingsBorder"

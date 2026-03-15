@@ -1,0 +1,112 @@
+name: Build RTSP_Cams
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+
+  build:
+
+    runs-on: windows-latest
+
+    strategy:
+      matrix:
+        include:
+          - arch: win-x86
+            type: portable
+            selfcontained: true
+          - arch: win-x64
+            type: portable
+            selfcontained: true
+          - arch: win-x86
+            type: framework
+            selfcontained: false
+          - arch: win-x64
+            type: framework
+            selfcontained: false
+
+    steps:
+
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 10.0.x
+
+    - name: Define version
+      run: echo "BUILD_VERSION=1.0.${{ github.run_number }}" >> $env:GITHUB_ENV
+
+    - name: Restore
+      run: dotnet restore
+
+    - name: Publish
+      run: |
+        dotnet publish RTSP_Cams/RTSP_Cams.csproj `
+          -c Release `
+          -r ${{ matrix.arch }} `
+          --self-contained ${{ matrix.selfcontained }} `
+          -p:PublishSingleFile=${{ matrix.selfcontained }} `
+          -p:IncludeNativeLibrariesForSelfExtract=true `
+          -p:Version=${{ env.BUILD_VERSION }} `
+          -p:FileVersion=${{ env.BUILD_VERSION }} `
+          -p:AssemblyVersion=${{ env.BUILD_VERSION }} `
+          -p:InformationalVersion=${{ env.BUILD_VERSION }} `
+          -o publish/${{ matrix.arch }}-${{ matrix.type }}
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: RTSP_Cams_${{ matrix.arch }}_${{ matrix.type }}
+        path: publish/${{ matrix.arch }}-${{ matrix.type }}
+
+
+  release:
+
+    needs: build
+    runs-on: windows-latest
+
+    steps:
+
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Download artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: artifacts
+
+    - name: Generate changelog
+      run: |
+        git fetch --tags
+        $lastTag = git describe --tags --abbrev=0 2>$null
+        if ($lastTag) {
+            git log "$lastTag..HEAD" --pretty=format:"- %s" > CHANGELOG.txt
+        } else {
+            git log --pretty=format:"- %s" > CHANGELOG.txt
+        }
+
+    - name: Zip builds
+      run: |
+        powershell Compress-Archive artifacts/RTSP_Cams_win-x64_portable/* RTSP_Cams_win-x64_portable.zip
+        powershell Compress-Archive artifacts/RTSP_Cams_win-x86_portable/* RTSP_Cams_win-x86_portable.zip
+        powershell Compress-Archive artifacts/RTSP_Cams_win-x64_framework/* RTSP_Cams_win-x64_framework.zip
+        powershell Compress-Archive artifacts/RTSP_Cams_win-x86_framework/* RTSP_Cams_win-x86_framework.zip
+
+    - name: Create Release
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: build-${{ github.run_number }}
+        name: Build ${{ github.run_number }}
+        body_path: CHANGELOG.txt
+        files: |
+          RTSP_Cams_win-x64_portable.zip
+          RTSP_Cams_win-x86_portable.zip
+          RTSP_Cams_win-x64_framework.zip
+          RTSP_Cams_win-x86_framework.zip
