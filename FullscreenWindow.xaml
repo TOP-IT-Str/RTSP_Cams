@@ -9,14 +9,25 @@
         Background="Black"
         Topmost="True"
         KeyDown="Window_KeyDown"
-        MouseLeftButtonDown="Window_MouseLeftButtonDown">
+        MouseDown="CloseBtn_OnMouseDown">
     <Grid Background="Black">
-        <vlc:VideoView x:Name="videoView" />
+
+        <vlc:VideoView x:Name="videoView" Margin="0 30 0 0" />
+        <Border VerticalAlignment="Top"
+                HorizontalAlignment="Right"
+                Margin="16 2"
+                Padding="10,2"
+                Background="#66000000"
+                CornerRadius="6">
+        <Button Width="26" Height="26" Content="X" HorizontalAlignment="Center" Margin="0" 
+                VerticalAlignment="Center" 
+                />
+        </Border>
 
         <Border VerticalAlignment="Top"
                 HorizontalAlignment="Left"
-                Margin="16"
-                Padding="10,6"
+                Margin="16 0"
+                Padding="10,2"
                 Background="#66000000"
                 CornerRadius="6">
             <TextBlock x:Name="TitleText"

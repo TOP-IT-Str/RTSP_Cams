@@ -137,10 +137,9 @@ namespace RTSP_Cams2
                 Close();
         }
 
-        private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        private void CloseBtn_OnMouseDown(object sender, MouseButtonEventArgs e)
         {
-            if (e.ClickCount == 2)
-                Close();
+            Close();
         }
     }
 }
