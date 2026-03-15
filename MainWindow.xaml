@@ -14,6 +14,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
         <ScrollViewer Grid.Row="0"
@@ -70,7 +71,22 @@
             </ItemsControl>
         </ScrollViewer>
 
-        <Border Grid.Row="1"
+        <Border x:Name="ShowSettingsBorder"
+                Visibility="Visible"
+                Grid.Row="1"
+                Background="#1A1A1A"
+                BorderBrush="#333333"
+                BorderThickness="1,1,1,0"
+                Padding="0"
+                MouseDown="ShowSettings"
+                >
+            <TextBlock HorizontalAlignment="Center" Text="▲" Foreground="White" Margin="0,0,8,0" 
+                       MouseDown="ShowSettings"/>
+        </Border>
+
+        <Border x:Name="SettingsBorder"
+                Visibility="Collapsed"
+                Grid.Row="2"
                 Background="#1A1A1A"
                 BorderBrush="#333333"
                 BorderThickness="1,1,1,0"
@@ -131,5 +147,7 @@
                 </StackPanel>
             </Grid>
         </Border>
+
+        
     </Grid>
 </Window>

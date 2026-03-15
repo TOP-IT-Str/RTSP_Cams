@@ -9,6 +9,8 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
 
 namespace RTSP_Cams2
 {
@@ -320,5 +322,19 @@ namespace RTSP_Cams2
 
         private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
             => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+
+        private void ShowSettings(object sender, MouseButtonEventArgs e)
+        {
+            if (SettingsBorder.Visibility == Visibility.Visible)
+            {
+                SettingsBorder.Visibility = Visibility.Collapsed;
+                (ShowSettingsBorder.Child as TextBlock)?.Text = "▲";
+            }
+            else
+            {
+                SettingsBorder.Visibility = Visibility.Visible;
+                (ShowSettingsBorder.Child as TextBlock)?.Text = "▼";
+            }
+        }
     }
 }
