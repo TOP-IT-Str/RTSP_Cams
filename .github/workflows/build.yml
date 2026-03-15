@@ -46,7 +46,7 @@ jobs:
 
     - name: Publish
       run: |
-        dotnet publish RTSP_Cams/RTSP_Cams.csproj `
+        dotnet publish ./RTSP_Cams/RTSP_Cams.csproj `
           -c Release `
           -r ${{ matrix.arch }} `
           --self-contained ${{ matrix.selfcontained }} `
