@@ -101,6 +101,8 @@ jobs:
 
     - name: Create Release
       uses: softprops/action-gh-release@v2
+      env:
+        GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
       with:
         tag_name: build-${{ github.run_number }}
         name: Build ${{ github.run_number }}
@@ -110,3 +112,4 @@ jobs:
           RTSP_Cams_win-x86_portable.zip
           RTSP_Cams_win-x64_framework.zip
           RTSP_Cams_win-x86_framework.zip
+          
