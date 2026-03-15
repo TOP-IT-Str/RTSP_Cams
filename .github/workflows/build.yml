@@ -14,12 +14,6 @@ jobs:
       matrix:
         include:
           - arch: win-x86
-            type: portable
-            selfcontained: true
-          - arch: win-x64
-            type: portable
-            selfcontained: true
-          - arch: win-x86
             type: framework
             selfcontained: false
           - arch: win-x64
@@ -94,10 +88,8 @@ jobs:
 
     - name: Zip builds
       run: |
-        powershell Compress-Archive artifacts/RTSP_Cams_win-x64_portable/* RTSP_Cams_win-x64_portable.zip
-        powershell Compress-Archive artifacts/RTSP_Cams_win-x86_portable/* RTSP_Cams_win-x86_portable.zip
-        powershell Compress-Archive artifacts/RTSP_Cams_win-x64_framework/* RTSP_Cams_win-x64_framework.zip
-        powershell Compress-Archive artifacts/RTSP_Cams_win-x86_framework/* RTSP_Cams_win-x86_framework.zip
+        powershell Compress-Archive artifacts/RTSP_Cams_win-x64_framework/* IT TOP GLAZ-x64.zip
+        powershell Compress-Archive artifacts/RTSP_Cams_win-x86_framework/* IT TOP GLAZ-x86.zip
 
     - name: Create Release
       uses: softprops/action-gh-release@v2
@@ -108,8 +100,6 @@ jobs:
         name: Build ${{ github.run_number }}
         body_path: CHANGELOG.txt
         files: |
-          RTSP_Cams_win-x64_portable.zip
-          RTSP_Cams_win-x86_portable.zip
-          RTSP_Cams_win-x64_framework.zip
-          RTSP_Cams_win-x86_framework.zip
+          IT TOP GLAZ-x64.zip
+          IT TOP GLAZ-x86.zip
           
