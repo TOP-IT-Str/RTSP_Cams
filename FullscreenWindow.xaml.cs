@@ -1,5 +1,6 @@
 ﻿using LibVLCSharp.Shared;
 using System;
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Input;
 
@@ -10,12 +11,15 @@ namespace RTSP_Cams2
         private readonly LibVLC _libVLC;
         private readonly MediaPlayer _mediaPlayer;
         private Media? _media;
+        private bool _isClosing;
+        private string? _startupUrl;
 
         public FullscreenWindow(LibVLC libVLC, string title, string url)
         {
             InitializeComponent();
 
             _libVLC = libVLC;
+            _startupUrl = url;
             TitleText.Text = title;
 
             _mediaPlayer = new MediaPlayer(_libVLC)
@@ -26,26 +30,80 @@ namespace RTSP_Cams2
 
             videoView.MediaPlayer = _mediaPlayer;
 
-            Loaded += (_, _) => Start(url);
-            Closed += (_, _) => Cleanup();
+            Loaded += FullscreenWindow_Loaded;
+            Closing += FullscreenWindow_Closing;
+        }
+
+        private void FullscreenWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (!string.IsNullOrWhiteSpace(_startupUrl))
+                Start(_startupUrl);
         }
 
         private void Start(string url)
         {
-            _media?.Dispose();
+            if (_isClosing)
+                return;
+
+            try
+            {
+                _media?.Dispose();
+            }
+            catch
+            {
+            }
 
             _media = new Media(_libVLC, url, FromType.FromLocation);
             _media.AddOption(":rtsp-tcp");
             _media.AddOption(":network-caching=150");
             _media.AddOption(":live-caching=150");
 
-            _mediaPlayer.Mute = false;
-            _mediaPlayer.Volume = 100;
-            _mediaPlayer.Play(_media);
+            try
+            {
+                _mediaPlayer.Mute = false;
+                _mediaPlayer.Volume = 100;
+                _mediaPlayer.Play(_media);
+            }
+            catch
+            {
+            }
+        }
+
+        private void FullscreenWindow_Closing(object? sender, CancelEventArgs e)
+        {
+            if (_isClosing)
+                return;
+
+            _isClosing = true;
+            Cleanup();
         }
 
         private void Cleanup()
         {
+            try
+            {
+                videoView.MediaPlayer = null;
+            }
+            catch
+            {
+            }
+
+            try
+            {
+                _mediaPlayer.Mute = true;
+            }
+            catch
+            {
+            }
+
+            try
+            {
+                _mediaPlayer.Media = null;
+            }
+            catch
+            {
+            }
+
             try
             {
                 if (_mediaPlayer.IsPlaying)
@@ -55,8 +113,22 @@ namespace RTSP_Cams2
             {
             }
 
-            _media?.Dispose();
-            _mediaPlayer.Dispose();
+            try
+            {
+                _media?.Dispose();
+                _media = null;
+            }
+            catch
+            {
+            }
+
+            try
+            {
+                _mediaPlayer.Dispose();
+            }
+            catch
+            {
+            }
         }
 
         private void Window_KeyDown(object sender, KeyEventArgs e)

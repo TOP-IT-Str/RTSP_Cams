@@ -1,14 +1,14 @@
 ﻿using LibVLCSharp.Shared;
-using RTSP_Cams2;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
+using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
 
 namespace RTSP_Cams2
 {
@@ -18,6 +18,7 @@ namespace RTSP_Cams2
 
         private readonly LibVLC _libVLC;
         private int _gridColumns = 2;
+        private bool _isShuttingDown;
 
         public ObservableCollection<CameraViewModel> Cameras { get; } = new();
         public AppSettings Settings { get; set; } = new();
@@ -77,12 +78,18 @@ namespace RTSP_Cams2
 
         private void StartButton_Click(object sender, RoutedEventArgs e)
         {
+            if (_isShuttingDown)
+                return;
+
             SaveSettings();
             StartStreams();
         }
 
         private void StartStreams()
         {
+            if (_isShuttingDown)
+                return;
+
             StopAndClearStreams();
 
             int count = Settings.CameraCount;
@@ -117,6 +124,9 @@ namespace RTSP_Cams2
 
         private void FullscreenButton_Click(object sender, RoutedEventArgs e)
         {
+            if (_isShuttingDown)
+                return;
+
             if (sender is not FrameworkElement element)
                 return;
 
@@ -130,15 +140,25 @@ namespace RTSP_Cams2
                 Owner = this
             };
 
-            fullscreenWindow.ShowDialog();
+            fullscreenWindow.Show();
         }
 
         private void StopAndClearStreams()
         {
-            foreach (var camera in Cameras)
-                camera.Dispose();
+            var snapshot = new List<CameraViewModel>(Cameras);
 
             Cameras.Clear();
+
+            foreach (var camera in snapshot)
+            {
+                try
+                {
+                    camera.SafeShutdown();
+                }
+                catch
+                {
+                }
+            }
         }
 
         private void UpdateGridColumns()
@@ -200,11 +220,100 @@ namespace RTSP_Cams2
             File.WriteAllText(SettingsFileName, json);
         }
 
-        private void MainWindow_Closing(object? sender, CancelEventArgs e)
+        private async void MainWindow_Closing(object? sender, CancelEventArgs e)
         {
-            SaveSettings();
-            StopAndClearStreams();
-            _libVLC.Dispose();
+            if (_isShuttingDown)
+                return;
+
+            _isShuttingDown = true;
+            e.Cancel = true;
+            IsEnabled = false;
+
+            try
+            {
+                SaveSettings();
+            }
+            catch
+            {
+            }
+
+            bool closedGracefully = await ShutdownEverythingAsync(TimeSpan.FromSeconds(4));
+
+            if (!closedGracefully)
+            {
+                ForceTerminateApplication();
+                return;
+            }
+
+            Closing -= MainWindow_Closing;
+            Close();
+        }
+
+        private async Task<bool> ShutdownEverythingAsync(TimeSpan timeout)
+        {
+            try
+            {
+                var ownedWindows = new List<Window>();
+                foreach (Window owned in OwnedWindows)
+                    ownedWindows.Add(owned);
+
+                foreach (var owned in ownedWindows)
+                {
+                    try
+                    {
+                        owned.Close();
+                    }
+                    catch
+                    {
+                    }
+                }
+
+                var snapshot = new List<CameraViewModel>(Cameras);
+                Cameras.Clear();
+
+                await Dispatcher.InvokeAsync(() => { });
+
+                var shutdownTask = Task.Run(() =>
+                {
+                    foreach (var camera in snapshot)
+                    {
+                        try
+                        {
+                            camera.SafeShutdown();
+                        }
+                        catch
+                        {
+                        }
+                    }
+
+                    try
+                    {
+                        _libVLC.Dispose();
+                    }
+                    catch
+                    {
+                    }
+                });
+
+                Task completedTask = await Task.WhenAny(shutdownTask, Task.Delay(timeout));
+                return completedTask == shutdownTask;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private void ForceTerminateApplication()
+        {
+            try
+            {
+                Process.GetCurrentProcess().Kill(true);
+            }
+            catch
+            {
+                Environment.FailFast("RTSP_Cams2 forced termination.");
+            }
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;
