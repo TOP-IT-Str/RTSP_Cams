@@ -50,6 +50,17 @@ namespace RtspGridDemo
             );
 
             Closing += MainWindow_Closing;
+            Loaded += MainWindow_Loaded;
+        }
+
+        private void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (!string.IsNullOrWhiteSpace(Settings.IpAddress) &&
+                !string.IsNullOrWhiteSpace(Settings.Username) &&
+                Settings.CameraCount > 0)
+            {
+                StartStreams();
+            }
         }
 
         private void PasswordInput_OnPasswordChanged(object sender, RoutedEventArgs e)
