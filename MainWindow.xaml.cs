@@ -148,9 +148,10 @@ namespace RTSP_Cams
             if (element.Tag is not CameraViewModel camera)
                 return;
 
+            string subUrl = BuildDahuaRtspUrl(Settings, camera.Channel, mainStream: false);
             string mainUrl = BuildDahuaRtspUrl(Settings, camera.Channel, mainStream: true);
 
-            var fullscreenWindow = new FullscreenWindow(_libVLC, camera.Title, mainUrl)
+            var fullscreenWindow = new FullscreenWindow(_libVLC, camera.Title, subUrl, mainUrl)
             {
                 Owner = this
             };

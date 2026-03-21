@@ -11,8 +11,11 @@
         KeyDown="Window_KeyDown"
         MouseDown="CloseBtn_OnMouseDown">
     <Grid Background="Black">
-
-        <vlc:VideoView x:Name="videoView" Margin="0 30 0 0" />
+        <vlc:VideoView x:Name="mainVideoView"
+                       Margin="0 30 0 0" />
+        <vlc:VideoView x:Name="subVideoView"
+                       Margin="0 30 0 0" />
+        
         <Border VerticalAlignment="Top"
                 HorizontalAlignment="Right"
                 Margin="16 2"
