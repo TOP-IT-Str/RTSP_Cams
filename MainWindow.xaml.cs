@@ -1,4 +1,5 @@
 ﻿using LibVLCSharp.Shared;
+using RTSP_Cams.Settings;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -43,15 +44,9 @@ namespace RTSP_Cams
 
             LoadSettings();
             DataContext = this;
-            PasswordInput.Password = Settings.Password ?? string.Empty;
+            PasswordInput.Password = Settings.Password;
 
-            _libVLC = new LibVLC(
-                "--rtsp-tcp",
-                "--network-caching=300",
-                "--live-caching=300",
-                "--drop-late-frames",
-                "--skip-frames"
-            );
+            _libVLC = new LibVLC();
 
             Loaded += MainWindow_Loaded;
             Closing += MainWindow_Closing;
@@ -116,7 +111,7 @@ namespace RTSP_Cams
                 string title = Settings.GetCameraName(i);
                 string url = BuildDahuaRtspUrl(Settings, i, mainStream: false);
 
-                var vm = new CameraViewModel(_libVLC, title, url, i);
+                var vm = new CameraViewModel(_libVLC, title, url, i, Settings.VlcSettings.SubGrid);
                 Cameras.Add(vm);
             }
 
@@ -128,10 +123,10 @@ namespace RTSP_Cams
 
         private static string BuildDahuaRtspUrl(AppSettings settings, int channel, bool mainStream)
         {
-            string login = Uri.EscapeDataString(settings.Username ?? string.Empty);
-            string password = Uri.EscapeDataString(settings.Password ?? string.Empty);
-            string ip = settings.IpAddress ?? string.Empty;
-            int port = settings.RtspPort <= 0 ? 554 : settings.RtspPort;
+            string login = Uri.EscapeDataString(settings.Username);
+            string password = Uri.EscapeDataString(settings.Password);
+            string ip = settings.IpAddress;
+            int port = settings.RtspPort;
             int subtype = mainStream ? 0 : 1;
 
             return $"rtsp://{login}:{password}@{ip}:{port}/cam/realmonitor?channel={channel}&subtype={subtype}";
@@ -151,7 +146,7 @@ namespace RTSP_Cams
             string subUrl = BuildDahuaRtspUrl(Settings, camera.Channel, mainStream: false);
             string mainUrl = BuildDahuaRtspUrl(Settings, camera.Channel, mainStream: true);
 
-            var fullscreenWindow = new FullscreenWindow(_libVLC, camera.Title, subUrl, mainUrl)
+            var fullscreenWindow = new FullscreenWindow(_libVLC, camera.Title, subUrl, mainUrl, Settings)
             {
                 Owner = this
             };
@@ -188,27 +183,13 @@ namespace RTSP_Cams
             else GridColumns = 5;
         }
 
-        private void SetDefaulSettings()
-        {
-            Settings = new AppSettings
-            {
-                IpAddress = "192.168.1.108",
-                Username = "admin",
-                Password = "",
-                CameraCount = 4,
-                RtspPort = 554,
-                IsFullScreen = false,
-                CameraNames = new List<string>()
-            };
-        }
-
         private void LoadSettings()
         {
             try
             {
                 if (!File.Exists(SettingsFileName))
                 {
-                    SetDefaulSettings();
+                    Settings = new AppSettings();
                     return;
                 }
 
@@ -216,12 +197,10 @@ namespace RTSP_Cams
                 var loaded = JsonSerializer.Deserialize<AppSettings>(json);
 
                 Settings = loaded ?? new AppSettings();
-                if (Settings.RtspPort <= 0)
-                    Settings.RtspPort = 554;
             }
             catch
             {
-                SetDefaulSettings();
+                Settings = new AppSettings();
             }
             NormalizeCameraNames();
         }
@@ -331,7 +310,7 @@ namespace RTSP_Cams
             }
             catch
             {
-                Environment.FailFast("RTSP_Cams2 forced termination.");
+                Environment.FailFast("RTSP_Cams forced termination.");
             }
         }
 

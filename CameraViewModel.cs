@@ -1,6 +1,7 @@
 ﻿using LibVLCSharp.Shared;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using RTSP_Cams.Settings;
 
 namespace RTSP_Cams
 {
@@ -10,6 +11,7 @@ namespace RTSP_Cams
         private Media? _media;
         private string _status = "Ожидание";
         private bool _isDisposed;
+        ConcretVlcSettings _settings;
 
         public string Title { get; }
         public string Url { get; private set; }
@@ -26,16 +28,16 @@ namespace RTSP_Cams
             }
         }
 
-        public CameraViewModel(LibVLC libVLC, string title, string url, int channel)
+        public CameraViewModel(LibVLC libVLC, string title, string url, int channel, ConcretVlcSettings settings)
         {
             _libVLC = libVLC;
             Title = title;
             Url = url;
             Channel = channel;
+            _settings = settings;
 
             MediaPlayer = new MediaPlayer(_libVLC)
             {
-                EnableHardwareDecoding = true,
                 Mute = true
             };
 
@@ -49,10 +51,10 @@ namespace RTSP_Cams
 
         public void Start()
         {
-            StartWithUrl(Url, muted: true);
+            StartWithUrl(Url);
         }
 
-        public void StartWithUrl(string url, bool muted)
+        public void StartWithUrl(string url)
         {
             if (_isDisposed)
                 return;
@@ -68,16 +70,11 @@ namespace RTSP_Cams
             }
 
             _media = new Media(_libVLC, url, FromType.FromLocation);
-            _media.AddOption(":rtsp-tcp");
-            _media.AddOption(":network-caching=300");
-            _media.AddOption(":live-caching=300");
-
-            if (muted)
-                _media.AddOption(":no-audio");
+            _settings.ApplyTo(_media);
 
             try
             {
-                MediaPlayer.Mute = muted;
+                MediaPlayer.Mute = true;
                 MediaPlayer.Play(_media);
             }
             catch
@@ -90,15 +87,6 @@ namespace RTSP_Cams
         {
             if (_isDisposed)
                 return;
-
-            try
-            {
-                MediaPlayer.Mute = true;
-            }
-            catch
-            {
-            }
-
             try
             {
                 if (MediaPlayer.IsPlaying)
@@ -122,14 +110,6 @@ namespace RTSP_Cams
             try { MediaPlayer.EncounteredError -= MediaPlayer_EncounteredError; } catch { }
             try { MediaPlayer.EndReached -= MediaPlayer_EndReached; } catch { }
             try { MediaPlayer.Stopped -= MediaPlayer_Stopped; } catch { }
-
-            try
-            {
-                MediaPlayer.Mute = true;
-            }
-            catch
-            {
-            }
 
             try
             {

@@ -1,8 +1,8 @@
 ﻿using LibVLCSharp.Shared;
 using System.ComponentModel;
-using System.IO;
 using System.Windows;
 using System.Windows.Input;
+using RTSP_Cams.Settings;
 
 namespace RTSP_Cams
 {
@@ -22,26 +22,29 @@ namespace RTSP_Cams
         private readonly string _mainUrl;
         private bool _mainStreamActivated;
 
-        public FullscreenWindow(LibVLC libVLC, string title, string subUrl, string mainUrl)
+        AppSettings _settings;
+
+        public FullscreenWindow(LibVLC libVLC, string title, string subUrl, string mainUrl, AppSettings settings)
         {
             InitializeComponent();
 
             _libVLC = libVLC;
             _subUrl = subUrl;
             _mainUrl = mainUrl;
+            _settings = settings;
 
             TitleText.Text = title;
 
             _subMediaPlayer = new MediaPlayer(_libVLC)
             {
                 EnableHardwareDecoding = true,
-                Mute = true
+                Mute = !_settings.VlcSettings.SubFullscreen.Audio
             };
 
             _mainMediaPlayer = new MediaPlayer(_libVLC)
             {
                 EnableHardwareDecoding = true,
-                Mute = false
+                Mute = !_settings.VlcSettings.MainFullscreen.Audio
             };
 
             subVideoView.MediaPlayer = _subMediaPlayer;
@@ -72,14 +75,12 @@ namespace RTSP_Cams
             }
 
             _subMedia = new Media(_libVLC, _subUrl, FromType.FromLocation);
-            _subMedia.AddOption(":rtsp-tcp");
-            _subMedia.AddOption(":network-caching=150");
-            _subMedia.AddOption(":live-caching=150");
-            _subMedia.AddOption(":no-audio");
+            _settings.VlcSettings.SubFullscreen.ApplyTo(_subMedia);
 
             try
             {
-                _subMediaPlayer.Mute = true;
+                _subMediaPlayer.Mute = !_settings.VlcSettings.SubFullscreen.Audio;
+                _mainMediaPlayer.Volume = _settings.Volume;
                 _subMediaPlayer.Play(_subMedia);
             }
             catch
@@ -101,14 +102,12 @@ namespace RTSP_Cams
             }
 
             _mainMedia = new Media(_libVLC, _mainUrl, FromType.FromLocation);
-            _mainMedia.AddOption(":rtsp-tcp");
-            _mainMedia.AddOption(":network-caching=300");
-            _mainMedia.AddOption(":live-caching=300");
+            _settings.VlcSettings.MainFullscreen.ApplyTo(_mainMedia);
 
             try
             {
-                _mainMediaPlayer.Mute = false;
-                _mainMediaPlayer.Volume = 100;
+                _mainMediaPlayer.Mute = !_settings.VlcSettings.MainFullscreen.Audio;
+                _mainMediaPlayer.Volume = _settings.Volume;
                 _mainMediaPlayer.Play(_mainMedia);
             }
             catch

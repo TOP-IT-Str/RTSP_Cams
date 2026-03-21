@@ -1,14 +1,17 @@
-﻿namespace RTSP_Cams
+﻿namespace RTSP_Cams.Settings
 {
     public sealed class AppSettings
     {
-        public string IpAddress { get; set; } = "";
-        public string Username { get; set; } = "";
+        public string IpAddress { get; set; } = "192.168.1.108";
+        public string Username { get; set; } = "admin";
         public string Password { get; set; } = "";
-        public int CameraCount { get; set; } = 4;
-        public int RtspPort { get; set; } = 554;
+        public ushort CameraCount { get; set; } = 4;
+        public ushort RtspPort { get; set; } = 554;
 
         public bool IsFullScreen { get; set; } = false;
+        public byte Volume { get; set; } = 100;
+
+        public VlcSettings VlcSettings { get; set; } = new();
 
         public List<string> CameraNames { get; set; } = new();
 
