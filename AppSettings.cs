@@ -1,4 +1,4 @@
-﻿namespace RTSP_Cams2
+﻿namespace RTSP_Cams
 {
     public sealed class AppSettings
     {

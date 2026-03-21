@@ -1,7 +1,7 @@
-﻿<Application x:Class="RTSP_Cams2.App"
+﻿<Application x:Class="RTSP_Cams.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:RTSP_Cams2"
+             xmlns:local="clr-namespace:RTSP_Cams"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
          

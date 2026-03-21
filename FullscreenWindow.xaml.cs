@@ -4,7 +4,7 @@ using System.ComponentModel;
 using System.Windows;
 using System.Windows.Input;
 
-namespace RTSP_Cams2
+namespace RTSP_Cams
 {
     public partial class FullscreenWindow : Window
     {
@@ -71,6 +71,7 @@ namespace RTSP_Cams2
 
         private void FullscreenWindow_Closing(object? sender, CancelEventArgs e)
         {
+            Hide();
             if (_isClosing)
                 return;
 

@@ -12,7 +12,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 
-namespace RTSP_Cams2
+namespace RTSP_Cams
 {
     public partial class MainWindow : Window, INotifyPropertyChanged
     {

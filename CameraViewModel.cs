@@ -1,9 +1,8 @@
 ﻿using LibVLCSharp.Shared;
-using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace RTSP_Cams2
+namespace RTSP_Cams
 {
     public sealed class CameraViewModel : INotifyPropertyChanged, IDisposable
     {
