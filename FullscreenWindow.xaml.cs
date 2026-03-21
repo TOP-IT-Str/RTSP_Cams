@@ -1,13 +1,16 @@
 ﻿using LibVLCSharp.Shared;
+using RTSP_Cams.Settings;
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Input;
-using RTSP_Cams.Settings;
+using System.Windows.Threading;
 
 namespace RTSP_Cams
 {
     public partial class FullscreenWindow : Window
     {
+        private DispatcherTimer timer;
+
         private readonly LibVLC _libVLC;
 
         private readonly MediaPlayer _subMediaPlayer;
@@ -52,6 +55,11 @@ namespace RTSP_Cams
 
             Loaded += FullscreenWindow_Loaded;
             Closing += FullscreenWindow_Closing;
+            timer = new DispatcherTimer();
+            timer.Interval = TimeSpan.FromSeconds(1);
+            timer.Tick += Timer_Tick;
+            timer.Start();
+            Timer_Tick(timer, null);
         }
 
         private void FullscreenWindow_Loaded(object sender, RoutedEventArgs e)
@@ -288,6 +296,46 @@ namespace RTSP_Cams
         private void CloseBtn_OnMouseDown(object sender, MouseButtonEventArgs e)
         {
             Close();
+        }
+
+        private (uint width, uint height)? GetVideoResolution(MediaPlayer player)
+        {
+            var tracks = player.Media?.Tracks;
+            if (tracks == null)
+                return null;
+
+            foreach (var track in tracks)
+            {
+                if (track.TrackType == TrackType.Video)
+                {
+                    var video = track.Data.Video;
+
+                    return (video.Width, video.Height);
+                }
+            }
+
+            return null;
+        }
+
+        private void Timer_Tick(object sender, EventArgs e)
+        {
+            if (_isClosing)
+                return;
+            MediaPlayer activePlayer = _mainStreamActivated ? _mainMediaPlayer : _subMediaPlayer;
+            StreamTypeText.Text = _mainStreamActivated ? "Main stream" : "Sub stream (waiting for main stream...)";
+            var res = GetVideoResolution(activePlayer);
+            if (res != null)
+            {
+                var (w, h) = res.Value;
+                StreamTypeText.Text += $" ({w}x{h})";
+            }
+            try
+            {
+                StreamTypeText.Text += $" - FPS: {activePlayer.Fps:0.}";
+            }
+            catch
+            {
+            }
         }
     }
 }

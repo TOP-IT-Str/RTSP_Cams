@@ -33,10 +33,19 @@
                 Padding="10,2"
                 Background="#66000000"
                 CornerRadius="6">
-            <TextBlock x:Name="TitleText"
-                       Foreground="White"
-                       FontSize="18"
-                       FontWeight="SemiBold" />
+            <DockPanel>
+                <TextBlock x:Name="TitleText"
+                           Foreground="White"
+                           FontSize="18"
+                           FontWeight="SemiBold" />
+                <TextBlock x:Name="StreamTypeText"
+                           Foreground="White"
+                           Opacity="0.5"
+                           Margin="10,4"
+                           FontSize="14"
+                           FontWeight="SemiBold"
+                           Text="substream"/>
+            </DockPanel>
         </Border>
 
         <Border VerticalAlignment="Bottom"

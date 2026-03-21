@@ -63,6 +63,8 @@ jobs:
 
     needs: build
     runs-on: windows-latest
+    permissions:
+      contents: write
 
     steps:
 
