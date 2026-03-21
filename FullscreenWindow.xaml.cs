@@ -37,6 +37,7 @@ namespace RTSP_Cams
             _settings = settings;
 
             TitleText.Text = title;
+            VolumeSlider.Value = _settings.Volume;
 
             _subMediaPlayer = new MediaPlayer(_libVLC)
             {
@@ -336,6 +337,30 @@ namespace RTSP_Cams
             catch
             {
             }
+        }
+
+        private void VolumeSlider_OnValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if (_isClosing)
+                return;
+            _settings.Volume = (byte)Math.Round(VolumeSlider.Value);
+            TextVolumeValue.Text = _settings.Volume.ToString();
+            try
+            {
+                if (!_mainStreamActivated)
+                {
+                    _subMediaPlayer?.Volume = _settings.Volume;
+                }
+                _mainMediaPlayer?.Volume = _settings.Volume;
+            }
+            catch
+            {
+            }
+        }
+
+        private void ButtonBase_OnClick(object sender, RoutedEventArgs e)
+        {
+            Close();
         }
     }
 }
